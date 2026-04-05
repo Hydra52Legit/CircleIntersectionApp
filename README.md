@@ -123,9 +123,6 @@ CircleIntersectionApp/
 
 Это приложение разработано как курсовая работа по дисциплине "Языки, технологии и методы программирования" в МГТУ им. Н.Э. Баумана.
 
-**Автор:** Иванов Иван Иванович  
-**Группа:** ИУ5-**  
-**Дата:** 5 апреля 2026 г.
 
 ## 📄 Лицензия
 
@@ -140,7 +137,6 @@ MIT License - см. файл [LICENSE](LICENSE) для деталей.
 5. Откройте Pull Request
 
 ## 📞 Контакты
-
-Иванов Иван Иванович - ivanov@example.com
+@Hydra52Legits - Telegram
 
 Ссылка на проект: [https://github.com/your-username/CircleIntersectionApp](https://github.com/your-username/CircleIntersectionApp)
