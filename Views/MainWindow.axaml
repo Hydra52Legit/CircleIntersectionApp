@@ -3,8 +3,8 @@
         xmlns:vm="clr-namespace:CircleIntersectionApp.ViewModels"
         x:Class="CircleIntersectionApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="Пересечение окружностей - Курсовая работа"
-        Width="1200" Height="800"
+        Title="Пересечение окружностей"
+        MinWidth="800" MinHeight="600"
         Background="{StaticResource WindowBackgroundBrush}"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
@@ -16,16 +16,23 @@
 
     <Window.Resources>
         <LinearGradientBrush x:Key="WindowBackgroundBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-            <GradientStop Color="#1a1a2e" Offset="0"/>
-            <GradientStop Color="#16213e" Offset="1"/>
+            <GradientStop Color="#101227" Offset="0"/>
+            <GradientStop Color="#13192e" Offset="1"/>
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="CardBackgroundBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-            <GradientStop Color="#0f3460" Offset="0"/>
-            <GradientStop Color="#1a1a2e" Offset="1"/>
+            <GradientStop Color="#12203f" Offset="0"/>
+            <GradientStop Color="#101827" Offset="1"/>
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="TextColor" Color="#e8e8e8"/>
-        <SolidColorBrush x:Key="SecondaryTextColor" Color="#b0b0b0"/>
-        <SolidColorBrush x:Key="AccentColor" Color="#667eea"/>
+        <LinearGradientBrush x:Key="ContentBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#16213e" Offset="0"/>
+            <GradientStop Color="#0f1726" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="TextColor" Color="#f5f6ff"/>
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="#9fb2d9"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#5f8cff"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#2dd08c"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#f2c94c"/>
+        <SolidColorBrush x:Key="ErrorColor" Color="#ef5b5b"/>
     </Window.Resources>
 
     <Window.Styles>
@@ -33,40 +40,42 @@
             <Setter Property="Background" Value="{StaticResource AccentColor}"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,10"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Opacity" Value="0.98"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.3"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.18"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
         </Style>
 
         <Style Selector="Button:pointerover">
-            <Setter Property="Background" Value="#5a6fd8"/>
-            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+            <Setter Property="Background" Value="#4c74e8"/>
+            <Setter Property="RenderTransform" Value="scale(1.03)"/>
         </Style>
 
         <Style Selector="Button:pressed">
-            <Setter Property="Background" Value="#4c5fd5"/>
-            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+            <Setter Property="Background" Value="#3d64d1"/>
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
         </Style>
 
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#2a2a3e"/>
+            <Setter Property="Background" Value="#131f35"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
-            <Setter Property="BorderBrush" Value="#404040"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#2f486e"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="CaretBrush" Value="{StaticResource AccentColor}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
                 </Transitions>
             </Setter>
         </Style>
@@ -78,163 +87,142 @@
 
         <Style Selector="Border.card">
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BoxShadow" Value="0 4 20 0 #00000040"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
-                </Transitions>
-            </Setter>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BoxShadow" Value="0 15 35 0 #00000040"/>
         </Style>
 
-        <Style Selector="TextBlock">
+        <Style Selector="Border.status-card">
+            <Setter Property="Background" Value="#11203a"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="BorderBrush" Value="#2f4d89"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="140"/>
+        </Style>
+
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+        </Style>
+
+        <Style Selector="TextBlock.caption">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextColor}"/>
+        </Style>
+
+        <Style Selector="TextBlock.result-title">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
-        <!-- Header -->
-        <Border Grid.Row="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="12" Margin="0,0,0,20" Padding="20" BoxShadow="0 2 10 0 #00000040">
-            <Grid ColumnDefinitions="*,Auto">
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="🎯 Пересечение окружностей" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextColor}"/>
-                    <TextBlock Text="Интерактивная визуализация и анализ геометрических фигур" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,5,0,0"/>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="18">
+        <Border Grid.Row="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="18" Padding="24" Margin="0,0,0,20" BoxShadow="0 15 35 0 #00000040">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                <StackPanel>
+                    <TextBlock Text="Circle Intersection" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextColor}"/>
+                    <TextBlock Text="Интерактивный аналитический инструмент для пересечения окружностей" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,8,0,0"/>
                 </StackPanel>
-
-                <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Command="{Binding LoadFileCommand}"
-                            CommandParameter="{Binding $parent[Window]}"
-                            Margin="0,0,8,8">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Button Command="{Binding LoadFileCommand}" CommandParameter="{Binding $parent[Window]}" MinWidth="110" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="📂" FontSize="16"/>
                             <TextBlock Text="Загрузить" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-
-                    <Button Command="{Binding ResetCommand}"
-                            Margin="0,0,8,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔄" FontSize="16"/>
-                            <TextBlock Text="Сброс" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Click="ZoomInButton_Click"
-                            Margin="0,0,8,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔍+" FontSize="16"/>
-                            <TextBlock Text="Увеличить" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Click="ZoomOutButton_Click"
-                            Margin="0,0,8,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔍-" FontSize="16"/>
-                            <TextBlock Text="Уменьшить" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Click="ResetViewButton_Click"
-                            Margin="0,0,8,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🎯" FontSize="16"/>
-                            <TextBlock Text="Сброс вида" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding SaveFileCommand}"
-                            CommandParameter="{Binding $parent[Window]}"
-                            Margin="0,0,8,8">
+                    <Button Command="{Binding SaveFileCommand}" CommandParameter="{Binding $parent[Window]}" MinWidth="110">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="💾" FontSize="16"/>
                             <TextBlock Text="Сохранить" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                </WrapPanel>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <Grid Grid.Row="1" ColumnDefinitions="1.2*,1*" RowDefinitions="*,Auto" Margin="0,0,0,20">
-            <!-- Input Section -->
-            <Border Grid.Row="0" Grid.Column="0" Classes="card" Margin="0,0,15,15" Padding="20">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <TextBlock Grid.Row="0" Text="📝 Входные данные" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextColor}" Margin="0,0,0,15"/>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid ColumnDefinitions="1*,1*" RowDefinitions="Auto,*" ColumnSpacing="18" RowSpacing="18" Margin="0,0,0,20" MinWidth="780">
+            <Border Grid.Row="0" Grid.Column="0" Classes="card">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
+                        <TextBlock Text="📝 Входные данные" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextColor}"/>
+                        <TextBlock Text="Заполняйте два ряда через пробел" Classes="caption" VerticalAlignment="Center"/>
+                    </StackPanel>
 
-                    <TextBox Grid.Row="1"
-                             Text="{Binding InputData, Mode=TwoWay}"
-                             AcceptsReturn="True"
-                             TextWrapping="Wrap"
-                             MinHeight="200"
-                             Watermark="Введите координаты и радиусы окружностей..."
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    <TextBox Text="{Binding InputData, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="230" Watermark="x1 y1 r1\nx2 y2 r2" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
 
-                    <Border Grid.Row="2" Background="#1a1a2e" CornerRadius="8" Margin="0,15,0,0" Padding="15" BorderBrush="#404040" BorderThickness="1">
+                    <Border Background="#142145" CornerRadius="12" Padding="16" BorderBrush="#2f4d89" BorderThickness="1">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="💡 Формат ввода:" FontWeight="SemiBold" Foreground="{StaticResource TextColor}"/>
-                            <TextBlock Text="x₁ y₁ r₁" FontFamily="Consolas" Foreground="#27ae60"/>
-                            <TextBlock Text="x₂ y₂ r₂" FontFamily="Consolas" Foreground="#e74c3c"/>
-                            <TextBlock Text="Пример:" FontWeight="SemiBold" Margin="0,10,0,0" Foreground="{StaticResource TextColor}"/>
-                            <TextBlock Text="0 0 5" FontFamily="Consolas" Foreground="{StaticResource AccentColor}"/>
-                            <TextBlock Text="8 0 5" FontFamily="Consolas" Foreground="#e67e22"/>
+                            <TextBlock Text="Формат ввода" FontWeight="SemiBold" Foreground="{StaticResource TextColor}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <StackPanel>
+                                    <TextBlock Text="Первая окружность" FontWeight="SemiBold" Foreground="{StaticResource AccentColor}"/>
+                                    <TextBlock Text="x₁ y₁ r₁" FontFamily="Consolas" Foreground="#74d5a4"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Вторая окружность" FontWeight="SemiBold" Foreground="#f26a6a"/>
+                                    <TextBlock Text="x₂ y₂ r₂" FontFamily="Consolas" Foreground="#f2b76c"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="Пример" FontWeight="SemiBold" Foreground="{StaticResource TextColor}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <TextBlock Text="0 0 5" FontFamily="Consolas" Foreground="{StaticResource AccentColor}"/>
+                                <TextBlock Text="8 0 5" FontFamily="Consolas" Foreground="#f2b76c"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
-                </Grid>
+                </StackPanel>
             </Border>
 
-            <!-- Graph Section -->
-            <Border Grid.Row="0" Grid.Column="1" Classes="card" Margin="0,0,0,15" Padding="20">
-                <Grid RowDefinitions="Auto,*">
-                    <TextBlock Grid.Row="0" Text="📊 Визуализация" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextColor}" Margin="0,0,0,15"/>
+            <Border Grid.Row="0" Grid.Column="1" Classes="card">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
+                        <TextBlock Text="📊 Визуализация" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextColor}"/>
+                        <TextBlock Text="Колесо мыши / перетаскивание" Classes="caption" VerticalAlignment="Center"/>
+                    </StackPanel>
 
-                    <Border Grid.Row="1" Background="{StaticResource CardBackgroundBrush}" CornerRadius="8" Padding="2">
-                        <ScrollViewer x:Name="GraphScrollViewer"
-                                     HorizontalScrollBarVisibility="Auto"
-                                     VerticalScrollBarVisibility="Auto"
-                                     Background="#0f0f23">
-                            <Canvas x:Name="GraphCanvas"
-                                    Background="#0f0f23"
-                                    Width="800"
-                                    Height="600"
-                                    PointerWheelChanged="GraphCanvas_PointerWheelChanged"
-                                    PointerPressed="GraphCanvas_PointerPressed"
-                                    PointerMoved="GraphCanvas_PointerMoved"
-                                    PointerReleased="GraphCanvas_PointerReleased"
-                                    SizeChanged="GraphCanvas_SizeChanged"/>
+                    <Border Background="{StaticResource ContentBackgroundBrush}" CornerRadius="14" Padding="12">
+                        <ScrollViewer x:Name="GraphScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#0c1325">
+                            <Canvas x:Name="GraphCanvas" Background="#0c1325" Width="600" Height="400" PointerWheelChanged="GraphCanvas_PointerWheelChanged" PointerPressed="GraphCanvas_PointerPressed" PointerMoved="GraphCanvas_PointerMoved" PointerReleased="GraphCanvas_PointerReleased" SizeChanged="GraphCanvas_SizeChanged"/>
                         </ScrollViewer>
                     </Border>
-                </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Stretch">
+                        <Border Classes="status-card">
+                            <StackPanel>
+                                <TextBlock Text="Статус" Foreground="{StaticResource SecondaryTextColor}"/>
+                                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource TextColor}" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="status-card">
+                            <StackPanel>
+                                <TextBlock Text="Управление" Foreground="{StaticResource SecondaryTextColor}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                                    <Button Click="ZoomInButton_Click" Content="🔍+" MinWidth="60"/>
+                                    <Button Click="ZoomOutButton_Click" Content="🔍-" MinWidth="60"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Border Background="#111827" CornerRadius="12" Padding="14" BorderBrush="#2f4d89" BorderThickness="1">
+                        <TextBox Text="{Binding OutputResult, Mode=OneWay}" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" MinHeight="100" Background="Transparent" BorderThickness="0" FontFamily="Consolas" FontSize="13" Foreground="{StaticResource TextColor}"/>
+                    </Border>
+
+                    <Border Background="#1a1a2e" CornerRadius="10" Padding="10" BorderBrush="{StaticResource ErrorColor}" BorderThickness="1" IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚠️" FontSize="16" Foreground="{StaticResource ErrorColor}"/>
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorColor}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Border>
-
-            <!-- Results Section -->
-            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="card" Padding="20">
-                <Grid RowDefinitions="Auto,*">
-                    <TextBlock Grid.Row="0" Text="📋 Результаты анализа" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextColor}" Margin="0,0,0,15"/>
-
-                    <TextBox Grid.Row="1"
-                             Text="{Binding OutputResult, Mode=OneWay}"
-                             AcceptsReturn="True"
-                             TextWrapping="Wrap"
-                             IsReadOnly="True"
-                             MinHeight="120"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             FontFamily="Consolas"
-                             FontSize="13"
-                             Foreground="{StaticResource TextColor}"/>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <!-- Footer -->
-        <Border Grid.Row="2" Background="{StaticResource CardBackgroundBrush}" CornerRadius="12" Padding="15" BoxShadow="0 2 10 0 #00000040">
-            <TextBlock Text="🎓 КУРСОВАЯ РАБОТА
-по дисциплине «Языки, технологи и методы программирования»
- | Разработка прикладной программы на языке программирования C#"
-                       HorizontalAlignment="Center"
-                       Foreground="{StaticResource SecondaryTextColor}"
-                       FontSize="12"/>
+            </Grid>
+        </ScrollViewer>        <Border Grid.Row="2" Background="{StaticResource CardBackgroundBrush}" CornerRadius="16" Padding="14" BoxShadow="0 10 20 0 #00000030">
+            <TextBlock Text="Курсовой проект: разработка приложения для анализа пересечения окружностей на C# и Avalonia UI" HorizontalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" FontSize="12"/>
         </Border>
     </Grid>
 </Window>

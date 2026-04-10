@@ -62,6 +62,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if (sender is MainWindowViewModel vm &&
             (e.PropertyName == nameof(MainWindowViewModel.IsValidData) ||
              e.PropertyName == nameof(MainWindowViewModel.OutputResult) ||
+             e.PropertyName == nameof(MainWindowViewModel.ErrorMessage) ||
              e.PropertyName == nameof(MainWindowViewModel.CurrentCircleData)))
         {
             // Reset auto-fit when data changes
@@ -78,6 +79,27 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     try
                     {
                         await DrawGraphAnimated(vm);
+                        
+                        // Auto-scroll canvas to center if valid data
+                        if (vm.IsValidData && GraphScrollViewer is not null)
+                        {
+                            // Wait a bit for the canvas to update
+                            await Task.Delay(100);
+                            
+                            // Center the scroll viewer on the graph
+                            double extentWidth = GraphScrollViewer.Extent.Width;
+                            double extentHeight = GraphScrollViewer.Extent.Height;
+                            double viewportWidth = GraphScrollViewer.Viewport.Width;
+                            double viewportHeight = GraphScrollViewer.Viewport.Height;
+                            
+                            if (extentWidth > viewportWidth || extentHeight > viewportHeight)
+                            {
+                                GraphScrollViewer.Offset = new Vector(
+                                    Math.Max(0, (extentWidth - viewportWidth) / 2),
+                                    Math.Max(0, (extentHeight - viewportHeight) / 2)
+                                );
+                            }
+                        }
                     }
                     finally
                     {

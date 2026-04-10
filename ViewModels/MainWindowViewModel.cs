@@ -12,6 +12,8 @@ public class MainWindowViewModel : ViewModelBase
 {
     private string _inputData = string.Empty;
     private string _outputResult = string.Empty;
+    private string _statusMessage = string.Empty;
+    private string _errorMessage = string.Empty;
     private CircleData _currentCircleData = new CircleData();
     private bool _isValidData;
 
@@ -39,6 +41,18 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _outputResult;
         set => this.RaiseAndSetIfChanged(ref _outputResult, value);
+    }
+
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
+    }
+
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
     }
 
     public CircleData CurrentCircleData
@@ -79,7 +93,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            OutputResult = $"Ошибка загрузки файла: {ex.Message}";
+            ErrorMessage = $"Ошибка загрузки файла: {ex.Message}";
         }
     }
 
@@ -106,7 +120,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            OutputResult = $"Ошибка парсинга данных: {ex.Message}";
+            ErrorMessage = $"Ошибка парсинга данных: {ex.Message}";
             IsValidData = false;
         }
     }
@@ -161,7 +175,7 @@ public class MainWindowViewModel : ViewModelBase
 
             if (CurrentCircleData.R1 <= 0 || CurrentCircleData.R2 <= 0)
             {
-                OutputResult = "Ошибка: Радиусы должны быть положительными числами";
+                ErrorMessage = "Ошибка: Радиусы должны быть положительными числами";
                 IsValidData = false;
                 return;
             }
@@ -182,11 +196,12 @@ public class MainWindowViewModel : ViewModelBase
                                    $"Точка A: ({points.Value.x1:F3}, {points.Value.y1:F3})\n" +
                                    $"Точка B: ({points.Value.x2:F3}, {points.Value.y2:F3})\n\n" +
                                    $"Расстояние между центрами: {centerDistance:F3}";
+                    StatusMessage = "✓ Пересекаются";
                     IsValidData = true;
                 }
                 else
                 {
-                    OutputResult = "Ошибка: вычислить точки пересечения не удалось.";
+                    ErrorMessage = "Ошибка: вычислить точки пересечения не удалось.";
                     IsValidData = false;
                 }
             }
@@ -199,7 +214,8 @@ public class MainWindowViewModel : ViewModelBase
                                $"Расстояние между центрами: {centerDistance:F3}\n" +
                                $"Сумма радиусов: {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
                                $"Разность радиусов: {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
-                IsValidData = false;
+                StatusMessage = "✗ Не пересекаются";
+                IsValidData = true; // Окружности все равно рисуем
             }
         }
         catch (Exception ex)
@@ -213,6 +229,8 @@ public class MainWindowViewModel : ViewModelBase
     {
         InputData = "Введите данные в формате:\nx1 y1 r1\nx2 y2 r2\n\nили загрузите из файла";
         OutputResult = "Результаты появятся здесь";
+        StatusMessage = string.Empty;
+        ErrorMessage = string.Empty;
         IsValidData = false;
         CurrentCircleData = new CircleData();
     }
@@ -221,7 +239,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         if (!IsValidData)
         {
-            OutputResult = "Невозможно сохранить результат: данные невалидны";
+            ErrorMessage = "Невозможно сохранить результат: данные невалидны";
             return;
         }
 
@@ -245,7 +263,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            OutputResult = $"Ошибка сохранения: {ex.Message}";
+            ErrorMessage = $"Ошибка сохранения: {ex.Message}";
         }
     }
 }
