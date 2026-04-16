@@ -121,8 +121,16 @@ CircleIntersectionApp/
 
 ## 🎓 Курсовая работа
 
-Это приложение разработано как курсовая работа по дисциплине "Языки, технологии и методы программирования" в МГТУ им. Н.Э. Баумана.
+Это приложение разработано как курсовая работа по дисциплине **"Языки, технологии и методы программирования"**.
 
+**Учебное заведение:** МГТУ им. Н.Э. Баумана (Школа 21)
+
+**Выполнил:**
+- **Студент:** А.Р. Шарафранлиев
+- **Курс:** 1 (очная форма обучения)
+- **Преподаватель:** И.О. Фамилия
+
+**Дата завершения:** Апрель 2026 г.
 
 ## 📄 Лицензия
 
@@ -137,6 +145,9 @@ MIT License - см. файл [LICENSE](LICENSE) для деталей.
 5. Откройте Pull Request
 
 ## 📞 Контакты
-@Hydra52Legits - Telegram
 
-Ссылка на проект: [https://github.com/your-username/CircleIntersectionApp](https://github.com/your-username/CircleIntersectionApp)
+- **GitHub:** [@Hydra52Legit](https://github.com/Hydra52Legit)
+- **Telegram:** @Hydra52Legits
+- **Email:** Доступен через GitHub profile
+
+**Проект:** [CircleIntersectionApp](https://github.com/Hydra52Legit/CircleIntersectionApp)
