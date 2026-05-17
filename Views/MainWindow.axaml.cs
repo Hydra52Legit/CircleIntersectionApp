@@ -210,7 +210,28 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
             _zoomLevel = Math.Max(0.1, Math.Min(2.0, optimalScale)); // Limit zoom between 0.1 and 2.0
         }
-    }    private async Task DrawGraphAnimated(MainWindowViewModel vm)
+    }
+
+    private void RecenterGraph(CircleData c)
+    {
+        double xMin = Math.Min(c.X1 - c.R1, c.X2 - c.R2);
+        double xMax = Math.Max(c.X1 + c.R1, c.X2 + c.R2);
+        double yMin = Math.Min(c.Y1 - c.R1, c.Y2 - c.R2);
+        double yMax = Math.Max(c.Y1 + c.R1, c.Y2 + c.R2);
+
+        double padding = Math.Max(Math.Max((xMax - xMin) * 0.1, (yMax - yMin) * 0.1), 2.0);
+        xMin -= padding;
+        xMax += padding;
+        yMin -= padding;
+        yMax += padding;
+
+        double centerX = (xMin + xMax) / 2.0;
+        double centerY = (yMin + yMax) / 2.0;
+        _panOffsetX = -centerX;
+        _panOffsetY = -centerY;
+    }
+
+    private async Task DrawGraphAnimated(MainWindowViewModel vm)
     {
         if (GraphCanvas is null || vm is null)
             return;
@@ -622,6 +643,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         if (DataContext is MainWindowViewModel vm)
         {
+            if (vm.IsValidData)
+            {
+                RecenterGraph(vm.CurrentCircleData);
+            }
             DrawGraph(vm);
         }
     }
@@ -633,6 +658,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         if (DataContext is MainWindowViewModel vm)
         {
+            if (vm.IsValidData)
+            {
+                RecenterGraph(vm.CurrentCircleData);
+            }
             DrawGraph(vm);
         }
     }

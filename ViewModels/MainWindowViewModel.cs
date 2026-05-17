@@ -19,8 +19,9 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        InputData = "Введите данные в формате:\nx1 y1 r1\nx2 y2 r2\n\nили загрузите из файла";
-        OutputResult = "Результаты появятся здесь";
+        InputData = "0 0 5\n8 0 5";
+        OutputResult = "Результаты появятся после ввода данных";
+        StatusMessage = "Ожидание ввода данных";
 
         LoadFileCommand = ReactiveCommand.CreateFromTask<Window>(LoadFile);
         SaveFileCommand = ReactiveCommand.CreateFromTask<Window>(SaveResult);
@@ -43,17 +44,23 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _outputResult, value);
     }
 
-    public string ErrorMessage
-    {
-        get => _errorMessage;
-        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
-    }
-
     public string StatusMessage
     {
         get => _statusMessage;
         set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
     }
+
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _errorMessage, value);
+            this.RaisePropertyChanged(nameof(HasErrorMessage));
+        }
+    }
+
+    public bool HasErrorMessage => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     public CircleData CurrentCircleData
     {
@@ -83,153 +90,152 @@ public class MainWindowViewModel : ViewModelBase
 
             if (files.Count >= 1)
             {
-                var file = files[0];
-                using var stream = await file.OpenReadAsync();
+                await using var stream = await files[0].OpenReadAsync();
                 using var reader = new StreamReader(stream);
                 var content = await reader.ReadToEndAsync();
                 InputData = content;
-                ParseInputData(content);
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Ошибка загрузки файла: {ex.Message}";
-        }
-    }
-
-    private void ParseInputData(string data)
-    {
-        try
-        {
-            var lines = data.Trim().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length < 2)
-                throw new Exception("Недостаточно данных");
-
-            var firstLine = lines[0].Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            var secondLine = lines[1].Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (firstLine.Length < 3 || secondLine.Length < 3)
-                throw new Exception("Некорректный формат данных");
-
-            CurrentCircleData.X1 = double.Parse(firstLine[0]);
-            CurrentCircleData.Y1 = double.Parse(firstLine[1]);
-            CurrentCircleData.R1 = double.Parse(firstLine[2]);
-            CurrentCircleData.X2 = double.Parse(secondLine[0]);
-            CurrentCircleData.Y2 = double.Parse(secondLine[1]);
-            CurrentCircleData.R2 = double.Parse(secondLine[2]);
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Ошибка парсинга данных: {ex.Message}";
+            OutputResult = "";
+            StatusMessage = "Ошибка загрузки";
             IsValidData = false;
         }
     }
 
     private void TryParseInputData(string data)
     {
+        ErrorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(data))
+        {
+            OutputResult = "Введите данные в две строки: x1 y1 r1 и x2 y2 r2";
+            StatusMessage = "Ожидание ввода данных";
+            IsValidData = false;
+            return;
+        }
+
+        var lines = data.Replace("\r", string.Empty)
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        if (lines.Length < 2)
+        {
+            OutputResult = "Ошибка: требуется две строки с тремя числами в каждой.";
+            ErrorMessage = "Недостаточно данных. Введите две строки по три числа.";
+            StatusMessage = "Неверный ввод";
+            IsValidData = false;
+            return;
+        }
+
         try
         {
-            var lines = data.Trim().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length < 2)
+            var firstLine = SplitLine(lines[0]);
+            var secondLine = SplitLine(lines[1]);
+
+            if (firstLine.Length != 3 || secondLine.Length != 3)
+                throw new FormatException("Каждая строка должна содержать ровно три числа.");
+
+            CurrentCircleData.X1 = ParseDouble(firstLine[0]);
+            CurrentCircleData.Y1 = ParseDouble(firstLine[1]);
+            CurrentCircleData.R1 = ParseDouble(firstLine[2]);
+            CurrentCircleData.X2 = ParseDouble(secondLine[0]);
+            CurrentCircleData.Y2 = ParseDouble(secondLine[1]);
+            CurrentCircleData.R2 = ParseDouble(secondLine[2]);
+
+            if (CurrentCircleData.R1 <= 0 || CurrentCircleData.R2 <= 0)
             {
-                IsValidData = false;
-                return;
+                throw new ArgumentOutOfRangeException("r", "Радиусы должны быть положительными числами.");
             }
 
-            var firstLine = lines[0].Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            var secondLine = lines[1].Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (firstLine.Length < 3 || secondLine.Length < 3)
-            {
-                IsValidData = false;
-                return;
-            }
-
-            CurrentCircleData.X1 = double.Parse(firstLine[0]);
-            CurrentCircleData.Y1 = double.Parse(firstLine[1]);
-            CurrentCircleData.R1 = double.Parse(firstLine[2]);
-            CurrentCircleData.X2 = double.Parse(secondLine[0]);
-            CurrentCircleData.Y2 = double.Parse(secondLine[1]);
-            CurrentCircleData.R2 = double.Parse(secondLine[2]);
-
-            if (CurrentCircleData.R1 > 0 && CurrentCircleData.R2 > 0)
-            {
-                ValidateAndProcessData();
-            }
-            else
-            {
-                IsValidData = false;
-            }
+            ValidateAndProcessData();
         }
-        catch
+        catch (FormatException ex)
         {
+            OutputResult = "Ошибка: неверный формат данных.";
+            ErrorMessage = $"Ошибка парсинга: {ex.Message}";
+            StatusMessage = "Неверный ввод";
+            IsValidData = false;
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            OutputResult = "Ошибка: радиусы должны быть положительными числами.";
+            ErrorMessage = ex.Message;
+            StatusMessage = "Неверный ввод";
+            IsValidData = false;
+        }
+        catch (Exception ex)
+        {
+            OutputResult = "Ошибка при обработке данных.";
+            ErrorMessage = ex.Message;
+            StatusMessage = "Ошибка";
             IsValidData = false;
         }
     }
 
+    private string[] SplitLine(string line)
+    {
+        return line.Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    private double ParseDouble(string value)
+    {
+        if (!double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var result))
+            throw new FormatException($"Не удалось прочитать число: '{value}'. Используйте десятичную точку.");
+
+        return result;
+    }
+
     private void ValidateAndProcessData()
     {
-        try
+        double dx = CurrentCircleData.X2 - CurrentCircleData.X1;
+        double dy = CurrentCircleData.Y2 - CurrentCircleData.Y1;
+        double centerDistance = Math.Sqrt(dx * dx + dy * dy);
+
+        var intersected = CurrentCircleData.CirclesIntersect();
+        var points = CurrentCircleData.GetIntersectionPoints();
+
+        if (intersected && points.HasValue)
         {
-            ParseInputData(InputData);
-
-            if (CurrentCircleData.R1 <= 0 || CurrentCircleData.R2 <= 0)
-            {
-                ErrorMessage = "Ошибка: Радиусы должны быть положительными числами";
-                IsValidData = false;
-                return;
-            }
-
-            double dx = CurrentCircleData.X2 - CurrentCircleData.X1;
-            double dy = CurrentCircleData.Y2 - CurrentCircleData.Y1;
-            double centerDistance = Math.Sqrt(dx * dx + dy * dy);
-
-            if (CurrentCircleData.CirclesIntersect())
-            {
-                var points = CurrentCircleData.GetIntersectionPoints();
-                if (points.HasValue)
-                {
-                    OutputResult = "✓ Окружности пересекаются!\n\n" +
-                                   $"Первая окружность: центр ({CurrentCircleData.X1:F2}, {CurrentCircleData.Y1:F2}), радиус = {CurrentCircleData.R1:F2}\n" +
-                                   $"Вторая окружность: центр ({CurrentCircleData.X2:F2}, {CurrentCircleData.Y2:F2}), радиус = {CurrentCircleData.R2:F2}\n\n" +
-                                   "Точки пересечения:\n" +
-                                   $"Точка A: ({points.Value.x1:F3}, {points.Value.y1:F3})\n" +
-                                   $"Точка B: ({points.Value.x2:F3}, {points.Value.y2:F3})\n\n" +
-                                   $"Расстояние между центрами: {centerDistance:F3}";
-                    StatusMessage = "✓ Пересекаются";
-                    IsValidData = true;
-                }
-                else
-                {
-                    ErrorMessage = "Ошибка: вычислить точки пересечения не удалось.";
-                    IsValidData = false;
-                }
-            }
-            else
-            {
-                OutputResult = "✗ Окружности не пересекаются!\n\n" +
-                               "Проверьте условия:\n" +
-                               "- Расстояние между центрами должно быть меньше суммы радиусов\n" +
-                               "- Расстояние между центров должно быть больше разности радиусов\n\n" +
-                               $"Расстояние между центрами: {centerDistance:F3}\n" +
-                               $"Сумма радиусов: {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
-                               $"Разность радиусов: {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
-                StatusMessage = "✗ Не пересекаются";
-                IsValidData = true; // Окружности все равно рисуем
-            }
+            OutputResult = "Окружности пересекаются!\n\n" +
+                           $"Первая: центр ({CurrentCircleData.X1:F2}, {CurrentCircleData.Y1:F2}), r = {CurrentCircleData.R1:F2}\n" +
+                           $"Вторая: центр ({CurrentCircleData.X2:F2}, {CurrentCircleData.Y2:F2}), r = {CurrentCircleData.R2:F2}\n\n" +
+                           $"Точка A: ({points.Value.x1:F3}, {points.Value.y1:F3})\n" +
+                           $"Точка B: ({points.Value.x2:F3}, {points.Value.y2:F3})\n\n" +
+                           $"d = {centerDistance:F3}\n" +
+                           $"r1 + r2 = {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
+                           $"|r1 - r2| = {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
+            StatusMessage = "Окружности пересекаются";
+            ErrorMessage = string.Empty;
+            IsValidData = true;
         }
-        catch (Exception ex)
+        else
         {
-            OutputResult = $"Ошибка валидации: {ex.Message}";
-            IsValidData = false;
+            string reason;
+            if (centerDistance > CurrentCircleData.R1 + CurrentCircleData.R2)
+                reason = "Окружности удалены друг от друга.";
+            else if (centerDistance < Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2))
+                reason = "Одна окружность находится внутри другой без пересечения.";
+            else
+                reason = "Окружности не пересекаются в одной точке.";
+
+            OutputResult = "Окружности не пересекаются.\n\n" +
+                           reason + "\n\n" +
+                           $"d = {centerDistance:F3}\n" +
+                           $"r1 + r2 = {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
+                           $"|r1 - r2| = {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
+            StatusMessage = "Окружности не пересекаются";
+            ErrorMessage = string.Empty;
+            IsValidData = true;
         }
     }
 
     private void ResetData()
     {
-        InputData = "Введите данные в формате:\nx1 y1 r1\nx2 y2 r2\n\nили загрузите из файла";
-        OutputResult = "Результаты появятся здесь";
-        StatusMessage = string.Empty;
+        InputData = "0 0 5\n8 0 5";
+        OutputResult = "Результаты появятся после ввода данных";
+        StatusMessage = "Ожидание ввода данных";
         ErrorMessage = string.Empty;
         IsValidData = false;
         CurrentCircleData = new CircleData();
@@ -239,7 +245,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         if (!IsValidData)
         {
-            ErrorMessage = "Невозможно сохранить результат: данные невалидны";
+            ErrorMessage = "Невозможно сохранить результат: данные невалидны.";
             return;
         }
 
@@ -249,21 +255,23 @@ public class MainWindowViewModel : ViewModelBase
             {
                 Title = "Сохранить результат",
                 DefaultExtension = "txt",
-                SuggestedFileName = $"intersection_result_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+                SuggestedFileName = $"result_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
             });
 
             if (file is not null)
             {
-                using var stream = await file.OpenWriteAsync();
+                await using var stream = await file.OpenWriteAsync();
                 using var writer = new StreamWriter(stream);
                 await writer.WriteAsync(OutputResult);
                 await writer.FlushAsync();
-                OutputResult += $"\n\n✓ Результат сохранен в файл: {file.Name}";
+                StatusMessage = $"Результат сохранён в файл {file.Name}";
+                ErrorMessage = string.Empty;
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Ошибка сохранения: {ex.Message}";
+            StatusMessage = "Ошибка сохранения";
         }
     }
 }
