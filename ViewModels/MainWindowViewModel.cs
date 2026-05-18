@@ -144,7 +144,18 @@ public class MainWindowViewModel : ViewModelBase
             CurrentCircleData.Y2 = ParseDouble(secondLine[1]);
             CurrentCircleData.R2 = ParseDouble(secondLine[2]);
 
-            if (CurrentCircleData.R1 <= 0 || CurrentCircleData.R2 <= 0)
+            if (CurrentCircleData.R1 < 0 || CurrentCircleData.R2 < 0)
+            {
+                string negativeRadius = CurrentCircleData.R1 < 0 && CurrentCircleData.R2 < 0
+                    ? "Радиусы r1 и r2 отрицательные."
+                    : CurrentCircleData.R1 < 0
+                        ? "Радиус r1 отрицательный."
+                        : "Радиус r2 отрицательный.";
+
+                throw new ArgumentOutOfRangeException("r", negativeRadius);
+            }
+
+            if (CurrentCircleData.R1 == 0 || CurrentCircleData.R2 == 0)
             {
                 throw new ArgumentOutOfRangeException("r", "Радиусы должны быть положительными числами.");
             }
@@ -193,42 +204,71 @@ public class MainWindowViewModel : ViewModelBase
         double dy = CurrentCircleData.Y2 - CurrentCircleData.Y1;
         double centerDistance = Math.Sqrt(dx * dx + dy * dy);
 
-        var intersected = CurrentCircleData.CirclesIntersect();
+        const double epsilon = 1e-6;
+        double sumRadii = CurrentCircleData.R1 + CurrentCircleData.R2;
+        double diffRadii = Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2);
         var points = CurrentCircleData.GetIntersectionPoints();
 
-        if (intersected && points.HasValue)
+        if (centerDistance < epsilon && Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2) < epsilon)
         {
-            OutputResult = "Окружности пересекаются!\n\n" +
+            OutputResult = "Окружности совпадают."
+                           + $"\n\nРадиус: r1 = {CurrentCircleData.R1:F3}, r2 = {CurrentCircleData.R2:F3}";
+            StatusMessage = "Окружности совпадают";
+            ErrorMessage = string.Empty;
+            IsValidData = true;
+            return;
+        }
+
+        if (points.HasValue)
+        {
+            bool singlePoint = Math.Abs(points.Value.x1 - points.Value.x2) < epsilon &&
+                               Math.Abs(points.Value.y1 - points.Value.y2) < epsilon;
+            string intersectionInfo;
+
+            if (singlePoint)
+            {
+                intersectionInfo = $"Точка пересечения: ({points.Value.x1:F3}, {points.Value.y1:F3})";
+                StatusMessage = "Окружности касаются в одной точке";
+            }
+            else
+            {
+                intersectionInfo = $"Точка A: ({points.Value.x1:F3}, {points.Value.y1:F3})\n" +
+                                   $"Точка B: ({points.Value.x2:F3}, {points.Value.y2:F3})";
+                StatusMessage = "Окружности пересекаются";
+            }
+
+            OutputResult = (singlePoint ? "Окружности касаются в одной точке!\n\n" : "Окружности пересекаются!\n\n") +
                            $"Первая: центр ({CurrentCircleData.X1:F2}, {CurrentCircleData.Y1:F2}), r = {CurrentCircleData.R1:F2}\n" +
                            $"Вторая: центр ({CurrentCircleData.X2:F2}, {CurrentCircleData.Y2:F2}), r = {CurrentCircleData.R2:F2}\n\n" +
-                           $"Точка A: ({points.Value.x1:F3}, {points.Value.y1:F3})\n" +
-                           $"Точка B: ({points.Value.x2:F3}, {points.Value.y2:F3})\n\n" +
+                           intersectionInfo + "\n\n" +
                            $"d = {centerDistance:F3}\n" +
-                           $"r1 + r2 = {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
-                           $"|r1 - r2| = {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
-            StatusMessage = "Окружности пересекаются";
+                           $"r1 + r2 = {sumRadii:F3}\n" +
+                           $"|r1 - r2| = {diffRadii:F3}";
             ErrorMessage = string.Empty;
             IsValidData = true;
+            return;
         }
-        else
-        {
-            string reason;
-            if (centerDistance > CurrentCircleData.R1 + CurrentCircleData.R2)
-                reason = "Окружности удалены друг от друга.";
-            else if (centerDistance < Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2))
-                reason = "Одна окружность находится внутри другой без пересечения.";
-            else
-                reason = "Окружности не пересекаются в одной точке.";
 
-            OutputResult = "Окружности не пересекаются.\n\n" +
-                           reason + "\n\n" +
-                           $"d = {centerDistance:F3}\n" +
-                           $"r1 + r2 = {CurrentCircleData.R1 + CurrentCircleData.R2:F3}\n" +
-                           $"|r1 - r2| = {Math.Abs(CurrentCircleData.R1 - CurrentCircleData.R2):F3}";
-            StatusMessage = "Окружности не пересекаются";
-            ErrorMessage = string.Empty;
-            IsValidData = true;
-        }
+        string reason;
+        if (centerDistance > sumRadii)
+            reason = "Окружности удалены друг от друга.";
+        else if (centerDistance < diffRadii)
+            reason = "Одна окружность находится внутри другой без пересечения.";
+        else if (Math.Abs(centerDistance - sumRadii) < epsilon)
+            reason = "Окружности касаются внешне в одной точке.";
+        else if (Math.Abs(centerDistance - diffRadii) < epsilon)
+            reason = "Окружности касаются внутренне в одной точке.";
+        else
+            reason = "Окружности не пересекаются в одной точке.";
+
+        OutputResult = "Окружности не пересекаются.\n\n" +
+                       reason + "\n\n" +
+                       $"d = {centerDistance:F3}\n" +
+                       $"r1 + r2 = {sumRadii:F3}\n" +
+                       $"|r1 - r2| = {diffRadii:F3}";
+        StatusMessage = "Окружности не пересекаются";
+        ErrorMessage = string.Empty;
+        IsValidData = true;
     }
 
     private void ResetData()

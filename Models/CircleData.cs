@@ -18,8 +18,11 @@ public class CircleData
         double d = Math.Sqrt(dx * dx + dy * dy);
         double sumRadii = R1 + R2;
         double diffRadii = Math.Abs(R1 - R2);
+        const double epsilon = 1e-6;
 
-        return d < sumRadii && d > diffRadii;
+        if (d < epsilon && Math.Abs(R1 - R2) < epsilon)
+            return false;
+        return d <= sumRadii + epsilon && d >= diffRadii - epsilon;
     }
 
     public (double x1, double y1, double x2, double y2)? GetIntersectionPoints()
